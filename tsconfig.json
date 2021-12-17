@@ -15,7 +15,8 @@
             "es2015.promise",
             "es5",
             "dom"
-        ]
+        ],
+        "skipLibCheck": true
     },
     "exclude": [
         "node_modules"
