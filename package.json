@@ -11,7 +11,7 @@
     "grunt-contrib-clean": "^1.0.0",
     "grunt-contrib-copy": "~1.0.0",
     "grunt-exec": "~0.4.7",
-    "tfx-cli": "^0.9.3",
+    "tfx-cli": "^0.10.0",
     "typescript": "^3.9.10",
     "vss-web-extension-sdk": "^5.141.0"
   },
