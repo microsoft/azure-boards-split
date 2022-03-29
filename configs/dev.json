@@ -1,0 +1,7 @@
+
+{
+    "public": false,
+    "baseUri": "http://localhost:8080/tfs/",
+    "id": "vsts-extension-split-work-dev",
+    "name": "Split! (dev)"
+}

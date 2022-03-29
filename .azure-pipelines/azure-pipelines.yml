@@ -6,7 +6,7 @@ variables:
   - name: marketplaceServiceConnection
     value: 'marketplaceServiceConnection'
   - name: publisherId
-    value: 'ms-devlabs'
+    value: 'blueprint'
   - name: publicExtensionName
     value: "Split!"
   - name: version.Patch
