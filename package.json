@@ -1,6 +1,6 @@
 {
   "devDependencies": {
-    "@types/jquery": "^3.5.10",
+    "@types/jquery": "^3.5.11",
     "@types/knockout": "^3.4.71",
     "@types/node": "^11.15.54",
     "@types/react": "^15.7.6",
@@ -11,7 +11,7 @@
     "grunt-contrib-clean": "^1.0.0",
     "grunt-contrib-copy": "~1.0.0",
     "grunt-exec": "~0.4.7",
-    "tfx-cli": "^0.10.0",
+    "tfx-cli": "^0.11.0",
     "typescript": "^3.9.10",
     "vss-web-extension-sdk": "^5.141.0"
   },
@@ -20,5 +20,9 @@
   "version": "0.0.0",
   "dependencies": {
     "grunt-ts": "^6.0.0-beta.22"
+  },
+  "scripts": {
+    "build:dev": "grunt build"
   }
+  
 }
