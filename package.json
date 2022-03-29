@@ -22,7 +22,9 @@
     "grunt-ts": "^6.0.0-beta.22"
   },
   "scripts": {
-    "build:dev": "grunt build"
+    "build:dev": "grunt build",
+    "build:release": "grunt build",
+    "package": "grunt package"
   }
   
 }
