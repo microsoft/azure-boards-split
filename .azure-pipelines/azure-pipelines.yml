@@ -10,10 +10,7 @@ variables:
     value: 'blueprint'
   - name: publicExtensionName
     value: "Split!"
-  - name: version.Patch
-    value: $[counter(variables['version.MajorMinor'],variables['splitPatchVer'])]
-  - name: versionNumber
-    value: '$(version.MajorMinor).$(version.Patch)'
+
   
 name: $(version.MajorMinor)$(rev:.r)
 
@@ -40,16 +37,6 @@ stages:
       vmImage: ubuntu-latest
     steps:
 
-
-    - task: PowerShell@2
-      displayName: Set the name of the build (i.e. the Build.BuildNumber)
-      inputs:
-        targetType: 'inline'
-        script: |
-          [string] $buildName = "$(versionNumber)"
-          Write-Host "Setting the name of the build to '$buildName'."
-          Write-Host "##vso[build.updatebuildnumber]$buildName"
-
     - task: NodeTool@0
       inputs:
         versionSpec: '14.x'
@@ -72,6 +59,7 @@ stages:
       marketplaceConnectedServiceName: $(marketplaceServiceConnection)
       publisherId: $(publisherId)
       publicExtensionName: $(publicExtensionName)
+      updateTaskVersion: true
 
 - stage: 'DeployTest'
   displayName: 'Deploy to Test'
@@ -85,6 +73,7 @@ stages:
       marketplaceConnectedServiceName: $(marketplaceServiceConnection)
       publisherId: $(publisherId)
       publicExtensionName: $(publicExtensionName)
+      updateTaskVersion: true
 
 - stage: 'DeployRelease'
   displayName: 'Deploy Release'
@@ -99,3 +88,4 @@ stages:
       publisherId: $(publisherId)
       publicExtensionName: $(publicExtensionName)
       extensionVisibility: 'public'
+      updateTaskVersion: true
