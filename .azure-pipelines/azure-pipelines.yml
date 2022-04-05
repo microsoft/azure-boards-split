@@ -1,5 +1,4 @@
 variables:
-  - group: Extensions Patch Versions
   - name: version.MajorMinor # Manually adjust the version number as needed for semantic versioning. Patch is auto-incremented.
     value: '0.1'
   - name: extensionName
