@@ -1,0 +1,91 @@
+variables:
+  - group: Extensions Patch Versions
+  - name: version.MajorMinor # Manually adjust the version number as needed for semantic versioning. Patch is auto-incremented.
+    value: '0.1'
+  - name: extensionName
+    value: 'vsts-extension-split-work'
+  - name: marketplaceServiceConnection
+    value: 'marketplaceServiceConnection'
+  - name: publisherId
+    value: 'blueprint'
+  - name: publicExtensionName
+    value: "Split!"
+
+  
+name: $(version.MajorMinor)$(rev:.r)
+
+trigger:
+  branches:
+    include:
+    - main
+
+pr: none
+
+resources:
+  repositories:
+    - repository: pipeline-templates
+      type: git
+      name: Sage/pipeline-templates
+      ref: main
+
+stages:
+- stage: 'Build'
+  jobs:
+  - job: 'BuildPack'
+    displayName: "Build and package"
+    pool:
+      vmImage: ubuntu-latest
+    steps:
+
+    - task: NodeTool@0
+      inputs:
+        versionSpec: '14.x'
+    - template: build.yml@pipeline-templates
+    - template: package.yml@pipeline-templates
+      parameters:
+        extensionName: $(extensionName)
+        outputPath: 'out'
+        rootPath: './scripts'
+
+- stage: 'DeployDev'
+  displayName: 'Deploy to dev'
+  dependsOn: Build
+  condition: succeeded()
+  jobs:
+  - template: deploy.yml@pipeline-templates
+    parameters:
+      environment: 'dev'
+      extensionName: $(extensionName)
+      marketplaceConnectedServiceName: $(marketplaceServiceConnection)
+      publisherId: $(publisherId)
+      publicExtensionName: $(publicExtensionName)
+      updateTaskVersion: true
+
+- stage: 'DeployTest'
+  displayName: 'Deploy to Test'
+  dependsOn: DeployDev
+  condition: succeeded()
+  jobs:
+  - template: deploy.yml@pipeline-templates
+    parameters:
+      environment: 'test'
+      extensionName: $(extensionName)
+      marketplaceConnectedServiceName: $(marketplaceServiceConnection)
+      publisherId: $(publisherId)
+      publicExtensionName: $(publicExtensionName)
+      updateTaskVersion: true
+
+- stage: 'DeployRelease'
+  displayName: 'Deploy Release'
+  dependsOn: DeployTest
+  condition: succeeded()
+  jobs:
+  - template: deploy.yml@pipeline-templates
+    parameters:
+      environment: 'public'
+      extensionName: $(extensionName)
+      marketplaceConnectedServiceName: $(marketplaceServiceConnection)
+      publisherId: $(publisherId)
+      publicExtensionName: $(publicExtensionName)
+      extensionVisibility: 'public'
+      updateTaskVersion: true
