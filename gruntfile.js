@@ -11,12 +11,12 @@
         },
         exec: {
             package: {
-                command: "tfx extension create --manifest-globs vss-extension.json",
+                command: "tfx extension create --manifest-globs azure-devops-extension.json",
                 stdout: true,
                 stderr: true
             },
             publishlocal: {
-                command: "tfx extension publish --manifest-globs vss-extension.json --service-url http://localhost:8080/tfs/",
+                command: "tfx extension publish --manifest-globs azure-devops-extension.json --service-url http://localhost:8080/tfs/",
                 stdout: true,
                 stderr: true
             }
