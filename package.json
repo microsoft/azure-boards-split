@@ -6,7 +6,7 @@
     "@types/react": "^15.7.6",
     "@types/react-dom": "^15.5.13",
     "@types/requirejs": "^2.1.34",
-    "grunt": "^1.4.1",
+    "grunt": "^1.5.2",
     "grunt-cli": "^1.4.3",
     "grunt-contrib-clean": "^1.0.0",
     "grunt-contrib-copy": "~1.0.0",
