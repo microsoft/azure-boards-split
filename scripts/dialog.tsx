@@ -1,10 +1,21 @@
-import * as React from "react";
-import * as ReactDOM from "react-dom";
+/// <reference types="vss-web-extension-sdk" />
 
-import TFS_Wit_Contracts = require("TFS/WorkItemTracking/Contracts");
-import TFS_Wit_Client = require("TFS/WorkItemTracking/RestClient");
+import { ITheme, getTheme, ITextFieldProps, TextField, ICheckboxProps, Checkbox, FocusZone, FocusZoneDirection, ThemeProvider } from '@fluentui/react';
+import { initializeIcons } from '@fluentui/react/lib/Icons';
+import { List } from '@fluentui/react/lib/List';
+import * as React from 'react';
+import * as ReactDOM from 'react-dom'
+
+
+import { WorkItem, WorkItemExpand } from "TFS/WorkItemTracking/Contracts";
+import { getClient } from "TFS/WorkItemTracking/RestClient";
 
 import { CoreFields } from "./constants";
+
+
+// Initialize icons in case this example uses them
+initializeIcons();
+
 
 const DefaultExcludedWorkItemStates = ["Closed", "Removed", "Cut", "Done", "Completed"];
 const ExcludedWorkItemMetaStates = ["Completed", "Removed"];
@@ -14,97 +25,90 @@ enum LoadingState {
     Loaded
 }
 
-function getChildIds(workItem: TFS_Wit_Contracts.WorkItem): number[] {
+const theme: ITheme = getTheme();
+const { palette, semanticColors, fonts } = theme;
+
+
+function getChildIds(workItem: WorkItem): number[] {
     return !workItem.relations ? [] : workItem.relations.filter(relation => relation.rel === "System.LinkTypes.Hierarchy-Forward").map(relation => {
         var url = relation.url;
         return parseInt(url.substr(url.lastIndexOf("/") + 1), 10);
     });
 }
 
-interface ITextBoxComponentProps extends React.Props<void> {
-    value: string;
-    onChange: (value: string) => void;
-}
-
-class TextBoxComponent extends React.Component<ITextBoxComponentProps, any> {
-
+class TextFieldComponenet extends React.Component<ITextFieldProps, any> {
     public render(): JSX.Element {
         var onChange = (event: any) => {
             this.props.onChange(event.target.value);
         }
-
         return <fieldset>
-            <label htmlFor="name">Title</label>
-            <input type="text" id="name" value={this.props.value} onChange={onChange} />
-        </fieldset>;
+            <TextField label='Title' id='name' value={this.props.value} onChange={onChange} />
+        </fieldset>
     }
 }
 
-interface ICheckboxComponentProps extends React.Props<void> {
-    checked: boolean;
-    onChange: (value: boolean) => void;
+
+class CheckboxComponent extends React.Component<ICheckboxProps, any> {
+
+    public render(): JSX.Element {
+        var onChange = (event: any) => {
+            this.props.onChange(event.target.checked);
+        }
+        return <Checkbox id='open' label="Open newly created work item" checked={this.props.checked} onChange={onChange} />
+        
+    }
 }
 
-class CheckboxComponent extends React.Component<ICheckboxComponentProps, any> {
+
+class TagCheckboxComponent extends React.Component<ICheckboxProps, any> {
 
     public render(): JSX.Element {
         var onChange = (event: any) => {
             this.props.onChange(event.target.checked);
         }
 
-        return <div>
-            <input type="checkbox" id="open" checked={this.props.checked} onChange={onChange} /><label htmlFor="open">Open newly created work item</label>
-        </div>;
+        return <Checkbox id='tags' label="Copy tags to new work item" checked={this.props.checked} onChange={onChange} />
+        
     }
 }
 
-class TagCheckboxComponent extends React.Component<ICheckboxComponentProps, any> {
-
-    public render(): JSX.Element {
-        var onChange = (event: any) => {
-            this.props.onChange(event.target.checked);
-        }
-
-        return <div>
-            <input type="checkbox" id="tags" checked={this.props.checked} onChange={onChange} /><label htmlFor="tags">Copy tags to new work item</label>
-        </div>;
-    }
-}
-
-interface IListComponentProps extends React.Props<void> {
+interface IListComponentProps {
     items: { key: string | number, title: string }[];
     onRemove: (key: string | number) => void;
 }
 
-class ListComponent extends React.Component<IListComponentProps, any> {
+class ListComponent extends React.Component<IListComponentProps> {
 
     constructor(props: any) {
         super(props);
     }
 
-    public render(): JSX.Element {
+    public render(): any {
 
-        var createItem = (item) => {
+        var createItem = (item, index: number | undefined) => {
 
             var onRemove = () => {
                 this.props.onRemove(item.key);
-            };
+            }
 
-            return <li key={item.key}>
+            return <li key={item.key} >
                 <div className="item-color"></div>
                 <div className="item-text">{item.title}</div>
                 <div className="item-action" onClick={onRemove}></div>
-            </li>;
-        };
+            </li>
+        }
 
-        return <ul className="list">{this.props.items.map(createItem)}</ul>;
+        return <ul className="list">
+            <List items={this.props.items} onRenderCell={createItem} />
+        </ul>
     }
 }
 
+
 interface IDialogComponentState {
     loadState: LoadingState;
-    workItem: TFS_Wit_Contracts.WorkItem;
-    children: TFS_Wit_Contracts.WorkItem[];
+    workItem: WorkItem;
+    children: WorkItem[];
     selectedIds: number[];
     newTitle: string;
     openNewWorkItem: boolean;
@@ -113,8 +117,8 @@ interface IDialogComponentState {
 
 class DialogComponent extends React.Component<any, IDialogComponentState> {
 
-    constructor() {
-        super();
+    constructor(props) {
+        super(props);
         this.state = {
             loadState: LoadingState.Loading,
             workItem: null,
@@ -124,7 +128,11 @@ class DialogComponent extends React.Component<any, IDialogComponentState> {
             openNewWorkItem: false,
             copyTags: false
         };
+
+
     }
+
+
 
     public render() {
         if (this.state.loadState === LoadingState.Loaded) {
@@ -160,13 +168,17 @@ class DialogComponent extends React.Component<any, IDialogComponentState> {
                     this.setState(Object["assign"]({}, this.state, { selectedIds: selectedIds.filter(i => i !== key) }));
                 };
 
+                var onChecboxClick = (value) => {
+                    console.log(value, "I was clicked");
+                }
+
                 return <div>
                     <div>{description}</div>
-                    <TextBoxComponent value={newTitle} onChange={onTextboxChange} />
+                    <TextFieldComponenet value={newTitle} onChange={onTextboxChange} />
                     <ListComponent items={items} onRemove={onRemove} />
-                    <CheckboxComponent checked={openNewWorkItem} onChange={onCheckboxChange} /> <br />
+                    <CheckboxComponent checked={openNewWorkItem} onChange={onCheckboxChange} /><br />
                     <TagCheckboxComponent checked={copyTags} onChange={onCopyTagsChange} />
-                </div>;
+                 </div>;
             }
         }
         return null;
@@ -174,10 +186,10 @@ class DialogComponent extends React.Component<any, IDialogComponentState> {
 
 
     public async startSplit(id: number): Promise<boolean> {
-        var client = TFS_Wit_Client.getClient();
+        var client = getClient();
         const context = VSS.getWebContext();
 
-        const workItem = await client.getWorkItem(id, null, null, TFS_Wit_Contracts.WorkItemExpand.All)
+        const workItem = await client.getWorkItem(id, null, null, WorkItemExpand.All)
         var childIds = getChildIds(workItem);
 
         // Display "No children to be split"
@@ -193,29 +205,29 @@ class DialogComponent extends React.Component<any, IDialogComponentState> {
             });
             return false;
         }
-        else {                     
+        else {
             var workItemTypeToExcludedStates = {};
             var incompleteChildren = [];
 
-            const children = await client.getWorkItems(childIds)   
+            const children = await client.getWorkItems(childIds)
 
             for (var i = 0, len = children.length; i < len; i++) {
                 const childItem = children[i];
                 const childItemType = childItem.fields[CoreFields.WorkItemType];
-                
+
                 // We need to determine this child's specific "Completed" and "Removed" states (may be custom depending on process)
                 // For example, "Closed" state is from the "Completed" category. Some users may have a custom process with additional 
                 // states in "Completed" or "Removed". After fetching, store each type's states in a dictionary 
                 if (!workItemTypeToExcludedStates[childItemType]) {
                     const states = await client.getWorkItemTypeStates(context.project.name, childItem.fields[CoreFields.WorkItemType]);
-                    const stateNamesInExcludedCategory = []; 
+                    const stateNamesInExcludedCategory = [];
                     states.forEach(s => {
-                        if (s.category === ExcludedWorkItemMetaStates[0] || s.category === ExcludedWorkItemMetaStates[1]){
-                            stateNamesInExcludedCategory.push(s.name); 
+                        if (s.category === ExcludedWorkItemMetaStates[0] || s.category === ExcludedWorkItemMetaStates[1]) {
+                            stateNamesInExcludedCategory.push(s.name);
                         }
                     })
-                    
-                    workItemTypeToExcludedStates[childItemType] = stateNamesInExcludedCategory; 
+
+                    workItemTypeToExcludedStates[childItemType] = stateNamesInExcludedCategory;
                 }
 
                 // Check if this child work item is in an incomplete state ("Proposed", "In Progress", or "Resolved")
@@ -236,14 +248,15 @@ class DialogComponent extends React.Component<any, IDialogComponentState> {
                 copyTags: true
             });
 
-            return this.state.selectedIds.length > 0;             
+            return this.state.selectedIds.length > 0;
         }
     }
 }
 
 let element = document.getElementById("main");
 let dialogComponent: DialogComponent;
-ReactDOM.render(<DialogComponent ref={(i) => dialogComponent = i} />, element);
+
+ReactDOM.render(<ThemeProvider><DialogComponent ref={(i) => dialogComponent = i} /></ThemeProvider>, element);
 
 var dialog = {
     startSplit: (id: number) => dialogComponent.startSplit(id),
@@ -256,6 +269,5 @@ var dialog = {
         };
     }
 };
-
 VSS.register(VSS.getContribution().id, dialog);
 VSS.notifyLoadSucceeded();

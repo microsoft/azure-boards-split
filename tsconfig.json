@@ -2,14 +2,15 @@
     "compilerOptions": {
         "module": "amd",
         "moduleResolution": "node",
-        "sourceMap": false,
+        "sourceMap": true,
         "jsx": "react",
         "types": [
             "knockout",
             "requirejs",
             "jquery",
             "react",
-            "vss-web-extension-sdk"
+            "vss-web-extension-sdk",
+            "@fluentui/react"
         ],
         "lib": [
             "es2015.promise",

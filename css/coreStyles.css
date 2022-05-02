@@ -52,7 +52,7 @@ li:hover .item-action {
 }
 
 /* START: This styles are for TFS 2015.2 */
-.bowtie-style {
+/* .bowtie-style {
     font-family: Segoe UI,Arial,sans-serif;
     font-size: 14px;
     line-height: normal;
@@ -65,5 +65,5 @@ li:hover .item-action {
     border: 0;
     margin: 24px 0 0 0;
     padding: 0;
-}
+} */
 /* END: This styles are for TFS 2015.2 */

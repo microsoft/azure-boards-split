@@ -1,14 +1,15 @@
 ﻿/// <reference types="vss-web-extension-sdk" />
 
-import TFS_Wit_Contracts = require("TFS/WorkItemTracking/Contracts");
-import TFS_Wit_Client = require("TFS/WorkItemTracking/RestClient");
-import TFS_Wit_Services = require("TFS/WorkItemTracking/Services");
+import { WorkItem, WorkItemExpand, WorkItemRelation } from"TFS/WorkItemTracking/Contracts";
+import { getClient as getClientWit } from"TFS/WorkItemTracking/RestClient";
+import { IWorkItemFormNavigationService, WorkItemFormNavigationService } from"TFS/WorkItemTracking/Services";
 
-import TFS_Work_Contracts = require("TFS/Work/Contracts");
-import TFS_Work_Client = require("TFS/Work/RestClient");
+import { TeamSettingsIteration } from"TFS/Work/Contracts";
+import { getClient as getClientWork } from"TFS/Work/RestClient";
 
 import { CoreFields, AdditionalFields } from "./constants";
 import { ignoreCaseComparer } from "VSS/Utils/String";
+
 
 function createFieldPatchBlock(field: string, value: string): any {
     return {
@@ -25,7 +26,7 @@ function createRemoveRelationPatchBlock(index: string) {
     };
 }
 
-function createAddRelationPatchBlock(relation: TFS_Wit_Contracts.WorkItemRelation) {
+function createAddRelationPatchBlock(relation: WorkItemRelation) {
     return {
         "op": "add",
         "path": "/relations/-",
@@ -43,7 +44,7 @@ function createWorkItemHtmlLink(id: number): string {
     return createHtmlLink(link, id);
 }
 
-function removeLinks(workItem: TFS_Wit_Contracts.WorkItem, linkedWorkItemIds: number[], targetId: number): IPromise<TFS_Wit_Contracts.WorkItem> {
+function removeLinks(workItem: WorkItem, linkedWorkItemIds: number[], targetId: number): IPromise<WorkItem> {
     if (!linkedWorkItemIds || linkedWorkItemIds.length === 0) {
         return new Promise(function (resolve, reject) {
             resolve(workItem);
@@ -66,10 +67,10 @@ function removeLinks(workItem: TFS_Wit_Contracts.WorkItem, linkedWorkItemIds: nu
     var comment = `The following items were ${createHtmlLink("http://aka.ms/split", "split")} to work item ${createWorkItemHtmlLink(targetId)}:<br>&nbsp;&nbsp;${childLinks}`;
     patchDocument.push(createFieldPatchBlock(CoreFields.History, comment));
 
-    return TFS_Wit_Client.getClient().updateWorkItem(patchDocument, workItem.id);
+    return getClientWit().updateWorkItem(patchDocument, workItem.id);
 }
 
-function addRelations(workItem: TFS_Wit_Contracts.WorkItem, relations: TFS_Wit_Contracts.WorkItemRelation[]): IPromise<TFS_Wit_Contracts.WorkItem> {
+function addRelations(workItem: WorkItem, relations: WorkItemRelation[]): IPromise<WorkItem> {
     if (!relations || relations.length === 0) {
         return new Promise(function (resolve, reject) {
             return workItem;
@@ -77,13 +78,13 @@ function addRelations(workItem: TFS_Wit_Contracts.WorkItem, relations: TFS_Wit_C
     }
 
     var patchDocument = relations.map(relation => createAddRelationPatchBlock(relation));
-    return TFS_Wit_Client.getClient().updateWorkItem(patchDocument, workItem.id);
+    return getClientWit().updateWorkItem(patchDocument, workItem.id);
 }
 
-function updateLinkRelations(sourceWorkItem: TFS_Wit_Contracts.WorkItem, targetWorkItem: TFS_Wit_Contracts.WorkItem, childIdsToMove: number[]): IPromise<TFS_Wit_Contracts.WorkItem> {
+function updateLinkRelations(sourceWorkItem: WorkItem, targetWorkItem: WorkItem, childIdsToMove: number[]): IPromise<WorkItem> {
     var parentRelation = sourceWorkItem.relations.filter(relation => relation.rel === "System.LinkTypes.Hierarchy-Reverse");
     var attachmentRelations = sourceWorkItem.relations.filter(relation => relation.rel === "AttachedFile").map(relation => {
-        return <TFS_Wit_Contracts.WorkItemRelation>{
+        return <WorkItemRelation>{
             rel: relation.rel,
             url: relation.url,
             title: null,
@@ -110,11 +111,11 @@ function updateLinkRelations(sourceWorkItem: TFS_Wit_Contracts.WorkItem, targetW
     });
 }
 
-function updateIterationPath(childIdsToMove: number[], iterationPath: string): IPromise<TFS_Wit_Contracts.WorkItem[]> {
-    var promises: IPromise<TFS_Wit_Contracts.WorkItem>[] = [];
+function updateIterationPath(childIdsToMove: number[], iterationPath: string): IPromise<WorkItem[]> {
+    var promises: IPromise<WorkItem>[] = [];
     childIdsToMove.forEach(childId => {
         var patchDocument = [createFieldPatchBlock(CoreFields.IterationPath, iterationPath)];
-        promises.push(TFS_Wit_Client.getClient().updateWorkItem(patchDocument, childId));
+        promises.push(getClientWit().updateWorkItem(patchDocument, childId));
     });
 
     return Promise.all(promises);
@@ -131,7 +132,7 @@ function isFieldInArray(fieldToFind: string, fieldsToCopy: string[]): boolean {
     return false;
 }
 
-async function createWorkItem(workItem: TFS_Wit_Contracts.WorkItem, copyTags: boolean, title?: string, iterationPath?: string): Promise<TFS_Wit_Contracts.WorkItem> {
+async function createWorkItem(workItem: WorkItem, copyTags: boolean, title?: string, iterationPath?: string): Promise<WorkItem> {
     const context = VSS.getWebContext();
     let patchDocument = [];
     const currentWorkItemType = workItem.fields[CoreFields.WorkItemType];
@@ -141,7 +142,7 @@ async function createWorkItem(workItem: TFS_Wit_Contracts.WorkItem, copyTags: bo
         AdditionalFields.AcceptanceCriteria, AdditionalFields.ReproSteps, AdditionalFields.SystemInfo];
 
     // Copy any fields that are required for this work item 
-    const workItemTypeInfo = await TFS_Wit_Client.getClient().getWorkItemType(context.project.name, currentWorkItemType);
+    const workItemTypeInfo = await getClientWit().getWorkItemType(context.project.name, currentWorkItemType);
     workItemTypeInfo.fields.forEach(f => {
         // Don't include iteration related fields or state, we don't want that copied from the current work item        
         const isIgnoredField = ignoreCaseComparer(f.referenceName, AdditionalFields.IterationId) === 0 || ignoreCaseComparer(f.referenceName, CoreFields.State) === 0;
@@ -172,10 +173,10 @@ async function createWorkItem(workItem: TFS_Wit_Contracts.WorkItem, copyTags: bo
     var comment = `This work item was ${createHtmlLink("http://aka.ms/split", "split")} from work item ${createWorkItemHtmlLink(workItem.id)}: ${workItem.fields[CoreFields.Title]}`;
     patchDocument.push(createFieldPatchBlock(CoreFields.History, comment));
 
-    return TFS_Wit_Client.getClient().createWorkItem(patchDocument, context.project.name, workItem.fields[CoreFields.WorkItemType]);
+    return getClientWit().createWorkItem(patchDocument, context.project.name, workItem.fields[CoreFields.WorkItemType]);
 }
 
-function findNextIteration(sourceWorkItem: TFS_Wit_Contracts.WorkItem): IPromise<string> {
+function findNextIteration(sourceWorkItem: WorkItem): IPromise<string> {
     var currentIterationPath = sourceWorkItem.fields[CoreFields.IterationPath];
 
     var context = VSS.getWebContext();
@@ -186,7 +187,7 @@ function findNextIteration(sourceWorkItem: TFS_Wit_Contracts.WorkItem): IPromise
         teamId: context.team.id
     };
 
-    return TFS_Work_Client.getClient().getTeamIterations(teamContext).then((iterations: TFS_Work_Contracts.TeamSettingsIteration[]) => {
+    return getClientWork().getTeamIterations(teamContext).then((iterations: TeamSettingsIteration[]) => {
         var index = 0;
         var found = false;
         for (var len = iterations.length; index < len; index++) {
@@ -205,8 +206,8 @@ function findNextIteration(sourceWorkItem: TFS_Wit_Contracts.WorkItem): IPromise
     });
 }
 
-async function performSplit(id: number, childIdsToMove: number[], copyTags: boolean, title?: string): Promise<TFS_Wit_Contracts.WorkItem> {
-    const sourceWorkItem = await TFS_Wit_Client.getClient().getWorkItem(id, null, null, TFS_Wit_Contracts.WorkItemExpand.All);
+async function performSplit(id: number, childIdsToMove: number[], copyTags: boolean, title?: string): Promise<WorkItem> {
+    const sourceWorkItem = await getClientWit().getWorkItem(id, null, null, WorkItemExpand.All);
     const iterationPath = await findNextIteration(sourceWorkItem);
     const targetWorkItem = await createWorkItem(sourceWorkItem, copyTags, title, iterationPath);
     await updateLinkRelations(sourceWorkItem, targetWorkItem, childIdsToMove);
@@ -217,7 +218,7 @@ async function performSplit(id: number, childIdsToMove: number[], copyTags: bool
 function showDialog(workItemId: number) {
     var _dialog: IExternalDialog;
     var _contribution: any;
-
+    
     var dialogOptions = <IHostDialogOptions>{
         title: "Split work item",
         draggable: true,
@@ -227,18 +228,18 @@ function showDialog(workItemId: number) {
         height: 450,
         width: 500,
         resizable: false,
-        useBowtieStyle: true,
+        useBowtieStyle: false,
         bowtieVersion: 2,
         getDialogResult: () => {
             return _contribution.getDetails();
         },
         okCallback: (details: { ids: number[], title: string, shouldOpenNewWorkItem: boolean, shouldCopyTags: boolean }) => {
             if (details.ids && details.ids.length > 0) {
-                performSplit(workItemId, details.ids, details.shouldCopyTags, details.title).then((splitWorkItem: TFS_Wit_Contracts.WorkItem) => {
+                performSplit(workItemId, details.ids, details.shouldCopyTags, details.title).then((splitWorkItem: WorkItem) => {
                     _dialog.close();
 
                     if (details.shouldOpenNewWorkItem) {
-                        VSS.getService(TFS_Wit_Services.WorkItemFormNavigationService.contributionId).then((service: TFS_Wit_Services.IWorkItemFormNavigationService) => {
+                        VSS.getService(WorkItemFormNavigationService.contributionId).then((service: IWorkItemFormNavigationService) => {
                             service.openWorkItem(splitWorkItem.id);
                         });
                     }
