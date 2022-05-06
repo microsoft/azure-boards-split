@@ -17,26 +17,28 @@ If you think your change would benefit others - please contribute to the master 
 details.md          - Description to be shown in marketplace   
 index.html          - Main entry point
 dialog.html         - Dialog html
-vss-extension.json  - Extension manifest
+azure-devops-extension.json  - Extension manifest
 ```
-#### Grunt ####
 
-Three basic `grunt` tasks are defined:
+#### Webpack ####
 
-* `build` - Compiles TS files in `scripts` folder
-* `package` - Builds the vsix package
-* `publishLocal` - Publishes the extension to your local box marketplace using `tfx-cli`
+There are few commands defined using webpack: 
 
-Note: To avoid `tfx` prompting for your token when publishing, login in beforehand using `tfx login` and the service uri of ` https://app.market.visualstudio.com`.
+For development:
+* `npm build:dev` - Just compiling the extension
+* `npm run dev` - Compile TS files and move necessery files to dist folder. Start webpack-dev-server that will host the files from you localmachine from https://localhost:9090
+
+For production:
+* `npm run build:release` - Compile TS files using production configuration and move necessery files to dist folder
+* `npm run package:release` - Create a zip file with all the files in dist folder.
 
 #### Setup for custom extensions ####
 
 1. Run npm install 
-2. Look for "Hello custom extension author" for common extension customization points
-3. Change the publisher in the vss-extension.json
-4. grunt build
-5. grunt package
-6. Upload to your on-prem instance via http://myAzureDevopsServer/_gallery/manage
+2. Change the publisher and version if needed in the azure-devops-extension.json
+3. npm run build:release
+4. npm run package:release
+5. Upload to your on-prem instance via the marketplace
 
 #### VS Code ####
 
