@@ -1,8 +1,5 @@
 /// <reference types="vss-web-extension-sdk" />
 
-import { ITheme, getTheme, ITextFieldProps, TextField, ICheckboxProps, Checkbox, FocusZone, FocusZoneDirection, ThemeProvider } from '@fluentui/react';
-import { initializeIcons } from '@fluentui/react/lib/Icons';
-import { List } from '@fluentui/react/lib/List';
 import * as React from 'react';
 import * as ReactDOM from 'react-dom'
 
@@ -12,9 +9,20 @@ import { getClient } from "TFS/WorkItemTracking/RestClient";
 
 import { CoreFields } from "./constants";
 
+import { TextField, TextFieldWidth } from "azure-devops-ui/TextField";
+import { Checkbox } from "azure-devops-ui/Checkbox";
+import { List, IListItemDetails, ListItem, ScrollableList } from "azure-devops-ui/List";
+import { FormItem } from "azure-devops-ui/FormItem";
 
-// Initialize icons in case this example uses them
-initializeIcons();
+import { ArrayItemProvider } from 'azure-devops-ui/Utilities/Provider';
+import { ObservableValue } from 'azure-devops-ui/Core/Observable';
+import { css } from "azure-devops-ui/Util";
+import { Icon, IconSize } from "azure-devops-ui/Icon";
+
+import { Card } from "azure-devops-ui/Card";
+
+import "azure-devops-ui/Core/override.css";
+import "./dialog.scss";
 
 
 const DefaultExcludedWorkItemStates = ["Closed", "Removed", "Cut", "Done", "Completed"];
@@ -25,9 +33,6 @@ enum LoadingState {
     Loaded
 }
 
-const theme: ITheme = getTheme();
-const { palette, semanticColors, fonts } = theme;
-
 
 function getChildIds(workItem: WorkItem): number[] {
     return !workItem.relations ? [] : workItem.relations.filter(relation => relation.rel === "System.LinkTypes.Hierarchy-Forward").map(relation => {
@@ -36,45 +41,68 @@ function getChildIds(workItem: WorkItem): number[] {
     });
 }
 
-class TextFieldComponenet extends React.Component<ITextFieldProps, any> {
+
+
+class TextFieldComponenet extends React.Component<any, any> {
     public render(): JSX.Element {
-        var onChange = (event: any) => {
-            this.props.onChange(event.target.value);
+        let titleValue = new ObservableValue<string>(this.props.value)
+
+
+
+        var onChange = (e, newvalue) => {
+            this.props.onChange(newvalue);
         }
-        return <fieldset>
-            <TextField label='Title' id='name' value={this.props.value} onChange={onChange} />
-        </fieldset>
+
+        return (<FormItem label="Title" >
+            <TextField value={titleValue} onChange={(e, newValue) => (this.props.onChange(newValue))} width={TextFieldWidth.auto} />
+        </FormItem>);
+
+
+
+        // <fieldset>
+        //     <TextField label='Title' value={this.props.value} onChange={onChange} />
+        // </fieldset>
     }
 }
 
 
-class CheckboxComponent extends React.Component<ICheckboxProps, any> {
+class CheckboxComponent extends React.Component<any, any> {
 
     public render(): JSX.Element {
-        var onChange = (event: any) => {
-            this.props.onChange(event.target.checked);
+        const checkbox = new ObservableValue<boolean>(this.props.checked);
+
+        var onChange = (event, checked) => {
+            checkbox.value = checked;
+            this.props.onChange(checked);
         }
-        return <Checkbox id='open' label="Open newly created work item" checked={this.props.checked} onChange={onChange} />
-        
+        return <Checkbox id='open' label="Open newly created work item" checked={checkbox} onChange={onChange} />
+
     }
 }
 
 
-class TagCheckboxComponent extends React.Component<ICheckboxProps, any> {
+class TagCheckboxComponent extends React.Component<any, any> {
 
     public render(): JSX.Element {
-        var onChange = (event: any) => {
-            this.props.onChange(event.target.checked);
+        const checkbox = new ObservableValue<boolean>(this.props.checked);
+
+        var onChange = (event, checked) => {
+            checkbox.value = checked;
+            this.props.onChange(checked);
         }
 
-        return <Checkbox id='tags' label="Copy tags to new work item" checked={this.props.checked} onChange={onChange} />
-        
+        return <Checkbox id='tags' label="Copy tags to new work item" checked={checkbox} onChange={onChange} />
+
     }
 }
 
 interface IListComponentProps {
-    items: { key: string | number, title: string }[];
+    items: IListWorkItem[];
     onRemove: (key: string | number) => void;
+}
+interface IListWorkItem {
+    key: string | number,
+    title: string
 }
 
 class ListComponent extends React.Component<IListComponentProps> {
@@ -85,25 +113,39 @@ class ListComponent extends React.Component<IListComponentProps> {
 
     public render(): any {
 
-        var createItem = (item, index: number | undefined) => {
+
+        var createItem = (
+            index: number,
+            item: IListWorkItem,
+            details: IListItemDetails<IListWorkItem>,
+            key?: string) => {
 
             var onRemove = () => {
                 this.props.onRemove(item.key);
             }
 
-            return <li key={item.key} >
+            return <ListItem key={key || "list-item" + index} index={index} details={details}>
                 <div className="item-color"></div>
                 <div className="item-text">{item.title}</div>
-                <div className="item-action" onClick={onRemove}></div>
-            </li>
+                <Icon ariaLabel="close" iconName="ChromeClose" size={IconSize.small} onClick={onRemove} />
+             
+            </ListItem>
         }
 
-        return <ul className="list">
-            <List items={this.props.items} onRenderCell={createItem} />
-        </ul>
+        return <Card className="list-card">
+        
+        <div className='list'>
+            <ScrollableList
+                itemProvider={new ArrayItemProvider<IListWorkItem>(this.props.items)}
+                renderRow={createItem}
+                className=''
+                width="100%"
+            />
+        </div>
+        </Card>
+
     }
 }
-
 
 interface IDialogComponentState {
     loadState: LoadingState;
@@ -168,9 +210,7 @@ class DialogComponent extends React.Component<any, IDialogComponentState> {
                     this.setState(Object["assign"]({}, this.state, { selectedIds: selectedIds.filter(i => i !== key) }));
                 };
 
-                var onChecboxClick = (value) => {
-                    console.log(value, "I was clicked");
-                }
+
 
                 return <div>
                     <div>{description}</div>
@@ -178,7 +218,7 @@ class DialogComponent extends React.Component<any, IDialogComponentState> {
                     <ListComponent items={items} onRemove={onRemove} />
                     <CheckboxComponent checked={openNewWorkItem} onChange={onCheckboxChange} /><br />
                     <TagCheckboxComponent checked={copyTags} onChange={onCopyTagsChange} />
-                 </div>;
+                </div>;
             }
         }
         return null;
@@ -253,10 +293,10 @@ class DialogComponent extends React.Component<any, IDialogComponentState> {
     }
 }
 
-let element = document.getElementById("main");
+let element = document.getElementById("root");
 let dialogComponent: DialogComponent;
 
-ReactDOM.render(<ThemeProvider><DialogComponent ref={(i) => dialogComponent = i} /></ThemeProvider>, element);
+ReactDOM.render(<DialogComponent ref={(i) => dialogComponent = i} />, element);
 
 var dialog = {
     startSplit: (id: number) => dialogComponent.startSplit(id),
@@ -269,5 +309,6 @@ var dialog = {
         };
     }
 };
+
 VSS.register(VSS.getContribution().id, dialog);
 VSS.notifyLoadSucceeded();

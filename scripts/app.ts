@@ -9,6 +9,7 @@ import { getClient as getClientWork } from"TFS/Work/RestClient";
 
 import { CoreFields, AdditionalFields } from "./constants";
 import { ignoreCaseComparer } from "VSS/Utils/String";
+import { VssConnection } from "VSS/Service";
 
 
 function createFieldPatchBlock(field: string, value: string): any {
@@ -284,6 +285,5 @@ var actionProvider = {
         }];
     }
 };
-
 VSS.register(VSS.getContribution().id, actionProvider);
 VSS.notifyLoadSucceeded();

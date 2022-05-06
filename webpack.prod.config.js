@@ -19,8 +19,9 @@ module.exports = {
     resolve: {
         extensions: [".ts", ".tsx", ".js"],
         alias: {
-            "OfficeFabric": path.resolve(__dirname, "node_modules/@fluentui/react/lib"),
-            "vss-web-extension-sdk": path.resolve(__dirname, "node_modules/vss-web-extension-sdk/lib/VSS.SDK")
+            "VSSUI": path.resolve(__dirname, "node_modules/azure-devops-ui"),
+            "vss-web-extension-sdk": path.resolve(__dirname, "node_modules/vss-web-extension-sdk/lib/VSS.SDK"),
+            "platformCss": path.resolve(__dirname, "node_modules/azure-devops-ui/Core/_platformCommon.scss"),
         },
         modules: [path.resolve("."), "node_modules"]
     },
@@ -31,9 +32,26 @@ module.exports = {
                 use: "ts-loader"
             },
             {
+                test: /\.scss$/,
+                use: [
+                    "style-loader",
+                    "css-loader",
+                    "azure-devops-ui/buildScripts/css-variables-loader",
+                    "sass-loader"
+                ]
+            },
+            {
                 test: /\.css$/,
                 use: ["style-loader", "css-loader"]
             },
+            {
+                test: /\.woff$/,
+                use: [
+                  {
+                    loader: "base64-inline-loader"
+                  }
+                ]
+              },
             {
                 test: /\.(png|svg|jpg|gif|html)$/,
                 use: "file-loader"

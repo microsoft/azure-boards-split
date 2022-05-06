@@ -9,8 +9,7 @@
             "requirejs",
             "jquery",
             "react",
-            "vss-web-extension-sdk",
-            "@fluentui/react"
+            "vss-web-extension-sdk"
         ],
         "lib": [
             "es2015.promise",

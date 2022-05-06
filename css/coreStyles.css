@@ -1,29 +1,20 @@
-.no-children {
-    height: 300px;
-    background: url("../img/no-children.png") no-repeat center;
-}
-
-li {
-  list-style-type: none;
-}
-
-li:hover {
-  background-color: #D4E5F5;
-}
 
 .list {
-  height: 100px;
-  overflow: auto;
-  padding: 0 8px;
+  display: flex;
   border: 1px solid #DEDEDE;
+  padding: 20px 0px;
+  overflow: auto;
 }
 
+.list-card {
+ box-shadow: none;
+}
 .item-color {
   background-color: #DEDEDE;
   height: 16px;
   width: 6px;
   display: inline-block;
-  margin-left: 5px;
+  margin-left: 10px;
   margin-right: 5px;
 }
 
@@ -47,23 +38,8 @@ li:hover {
   margin-top: 8px;
 }
 
-li:hover .item-action {
-  display: inline; 
+.bolt-default-horizontal-spacing {
+  padding-left: 0px !important; 
+  padding-right: 0px !important;
 }
 
-/* START: This styles are for TFS 2015.2 */
-/* .bowtie-style {
-    font-family: Segoe UI,Arial,sans-serif;
-    font-size: 14px;
-    line-height: normal;
-}
-.bowtie-style label {
-    display: inline !important;
-}
-
-.bowtie-style fieldset {
-    border: 0;
-    margin: 24px 0 0 0;
-    padding: 0;
-} */
-/* END: This styles are for TFS 2015.2 */
