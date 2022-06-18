@@ -36,6 +36,10 @@
     {
       "path": "dist",
       "addressable": true
+    },
+    {
+      "path": "img/icon.png",
+      "addressable": true
     }
   ],
   "categories": ["Azure Boards"],
