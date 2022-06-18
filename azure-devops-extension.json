@@ -8,7 +8,7 @@
   "publisher": "blueprint",
   "public": true,
   "icons": {
-    "default": "dist/img/logo.png"
+    "default": "./img/logo.png"
   },
   "targets": [
     {
@@ -37,7 +37,6 @@
       "path": "dist",
       "addressable": true
     }
-   
   ],
   "categories": ["Azure Boards"],
   "contributions": [
@@ -48,7 +47,7 @@
       "targets": ["ms.vss-work-web.work-item-context-menu"],
       "properties": {
         "group": "contributed",
-        "uri": "dist/index.html"
+        "uri": "./index.html"
       }
     },
     {
@@ -56,7 +55,7 @@
       "type": "ms.vss-web.control",
       "targets": [],
       "properties": {
-        "uri": "dist/dialog.html"
+        "uri": "./dialog.html"
       }
     }
   ]
