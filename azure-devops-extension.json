@@ -8,7 +8,7 @@
   "publisher": "blueprint",
   "public": true,
   "icons": {
-    "default": "./img/logo.png"
+    "default": "dist/img/logo.png"
   },
   "targets": [
     {
