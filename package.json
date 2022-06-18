@@ -34,11 +34,12 @@
     
   },
   "scripts": {
-    "dev": "npm run build:dev && webpack-dev-server --hot --progress --static ./dist --public-static-path ./dist",
+    "dev": "npm run build:dev && webpack-dev-server --hot --progress --static ./dist ",
     "clean:vsix": "rimraf *.vsix",
     "clean": "npm run clean:vsix && rimraf dist",
     "build:dev": "npm run clean && webpack --progress",
     "build:release": "npm run clean && webpack --config webpack.prod.config.js --progress",
-    "package:dev:web": "npm run clean:vsix && node ./package/packageDev"
+    "package:dev:web": "npm run clean:vsix && node ./package/packageDev",
+    "package:prod:web": "npm run clean:vsix && node ./package/packageProd"
   }
 }
