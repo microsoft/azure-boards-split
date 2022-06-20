@@ -23,13 +23,13 @@
   },
   "links": {
     "support": {
-      "uri": "https://github.com/snuziale/vsts-extension-split-work"
+      "uri": "https://github.com/microsoft/azure-boards-split"
     },
     "repository": {
-      "uri": "https://github.com/snuziale/vsts-extension-split-work"
+      "uri": "https://github.com/microsoft/azure-boards-split"
     },
     "issues": {
-      "uri": "https://github.com/snuziale/vsts-extension-split-work/issues"
+      "uri": "https://github.com/microsoft/azure-boards-split/issues"
     }
   },
   "files": [
@@ -38,7 +38,7 @@
       "addressable": true
     },
     {
-      "path": "img/icon.png",
+      "path": "img",
       "addressable": true
     }
   ],
