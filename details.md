@@ -30,4 +30,4 @@ The new split work item is created in the next sprint with the remaining work it
 This project uses [GitHub Issues](https://github.com/microsoft/azure-boards-split/issues) to track bugs and feature requests. Please search the existing issues before filing new issues to avoid duplicates. For new issues, file your bug or feature request as a new Issue. 
 
 ## Microsoft Support Policy
-Support for this project is limited to the resources listed above.
+Support for this project is limited to the resources listed above..
