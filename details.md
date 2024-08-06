@@ -2,6 +2,8 @@
 
 Split! enables teams to easily continue unfinished work items into the next sprint by “splitting” the work item into a new card in the next sprint.
 
+# Documentation
+
 ### What's special about Split?
 Smart detects incomplete tasks - even for processes with custom states
 Defaults split work item to the next iteration
