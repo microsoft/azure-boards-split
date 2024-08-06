@@ -16,7 +16,7 @@ Optionally copies all tags
 ## How does it work? 
 Use the context menu of a work item from the board or backlog to **Split** a work item with unfinished work into the next sprint.
 
-![Invoke Split from work item context menu](/img/split-contextmenu.png "Context Menu")
+![Invoke Split from work item context menu](/img/splitContextMenu.png "Context Menu")
 
 The dialog automatically populates with the remaining incomplete items.
 Update/keep the title, review and remove any items that no longer meet the requirements, and click **Split**.
