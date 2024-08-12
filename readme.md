@@ -3,7 +3,7 @@ Split! enables teams to easily continue unfinished work items into the next spri
 
 # Documentation
 
-For detailed instructions on using the Split Azure DevOps extension, please refer to the official documentation. You can access the comprehensive guide by clicking [Market place](https://marketplace.visualstudio.com/items?itemName=blueprint.vsts-extension-split-work). This resource provides step-by-step information to help you effectively utilize the estimation features within your Azure DevOps environment.
+For detailed instructions on using the Split Azure DevOps extension, please refer to the official documentation. You can access the comprehensive guide by clicking [Marketplace](https://marketplace.visualstudio.com/items?itemName=blueprint.vsts-extension-split-work). This resource provides step-by-step information to help you effectively utilize the estimation features within your Azure DevOps environment.
 
 # Support
 

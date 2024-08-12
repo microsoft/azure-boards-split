@@ -5,13 +5,14 @@ Split! enables teams to easily continue unfinished work items into the next spri
 # Documentation
 
 ### What's special about Split?
-Smart detects incomplete tasks - even for processes with custom states
-Defaults split work item to the next iteration
-Maintains parent link
-Retains all attachments
-Copies description, repro steps, acceptance criteria and any required fields to new work item
-Inserts comment revision with links detailing the split operation
-Optionally copies all tags
+
+* Smart detects incomplete tasks - even for processes with custom states
+* Defaults split work item to the next iteration
+* Maintains parent link
+* Retains all attachments
+* Copies description, repro steps, acceptance criteria and any required fields to new work item
+* Inserts comment revision with links detailing the split operation 
+* Optionally copies all tags
 
 ## How does it work? 
 Use the context menu of a work item from the board or backlog to **Split** a work item with unfinished work into the next sprint.
