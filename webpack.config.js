@@ -54,7 +54,7 @@ module.exports = {
                 use: ["style-loader", "css-loader"]
             },
             {
-                test: /\.woff$/,
+                test: /\.(woff|woff2|eot|ttf)$/,
                 use: [
                   {
                     loader: "base64-inline-loader"
