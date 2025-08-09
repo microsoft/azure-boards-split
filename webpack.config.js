@@ -55,12 +55,8 @@ module.exports = {
             },
             {
                 test: /\.(woff|woff2|eot|ttf)$/,
-                use: [
-                  {
-                    loader: "base64-inline-loader"
-                  }
-                ]
-              },
+                type: 'asset/inline'
+            },
             {
                 test: /\.(png|svg|jpg|gif|html)$/,
                 use: "file-loader"
