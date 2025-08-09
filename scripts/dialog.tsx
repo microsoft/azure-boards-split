@@ -36,7 +36,7 @@ enum LoadingState {
 
 function getChildIds(workItem: WorkItem): number[] {
     return !workItem.relations ? [] : workItem.relations.filter(relation => relation.rel === "System.LinkTypes.Hierarchy-Forward").map(relation => {
-        var url = relation.url;
+        const url = relation.url;
         return parseInt(url.substr(url.lastIndexOf("/") + 1), 10);
     });
 }
@@ -45,11 +45,11 @@ function getChildIds(workItem: WorkItem): number[] {
 
 class TextFieldComponenet extends React.Component<any, any> {
     public render(): JSX.Element {
-        let titleValue = new ObservableValue<string>(this.props.value)
+        const titleValue = new ObservableValue<string>(this.props.value)
 
 
 
-        var onChange = (e, newvalue) => {
+        const onChange = (e, newvalue) => {
             this.props.onChange(newvalue);
         }
 
@@ -71,7 +71,7 @@ class CheckboxComponent extends React.Component<any, any> {
     public render(): JSX.Element {
         const checkbox = new ObservableValue<boolean>(this.props.checked);
 
-        var onChange = (event, checked) => {
+        const onChange = (event, checked) => {
             checkbox.value = checked;
             this.props.onChange(checked);
         }
@@ -86,7 +86,7 @@ class TagCheckboxComponent extends React.Component<any, any> {
     public render(): JSX.Element {
         const checkbox = new ObservableValue<boolean>(this.props.checked);
 
-        var onChange = (event, checked) => {
+        const onChange = (event, checked) => {
             checkbox.value = checked;
             this.props.onChange(checked);
         }
@@ -114,13 +114,13 @@ class ListComponent extends React.Component<IListComponentProps> {
     public render(): any {
 
 
-        var createItem = (
+        const createItem = (
             index: number,
             item: IListWorkItem,
             details: IListItemDetails<IListWorkItem>,
             key?: string) => {
 
-            var onRemove = () => {
+            const onRemove = () => {
                 this.props.onRemove(item.key);
             }
 
@@ -178,7 +178,7 @@ class DialogComponent extends React.Component<any, IDialogComponentState> {
 
     public render() {
         if (this.state.loadState === LoadingState.Loaded) {
-            let { workItem, children, selectedIds, newTitle, openNewWorkItem, copyTags } = this.state;
+            const { workItem, children, selectedIds, newTitle, openNewWorkItem, copyTags } = this.state;
             if (!children || children.length === 0) {
                 return <div>
                     <div>There are no children to be split from this work item.</div>
@@ -186,27 +186,27 @@ class DialogComponent extends React.Component<any, IDialogComponentState> {
                 </div>;
             }
             else {
-                let description = ["Below are the incomplete items for ", <strong key={workItem.id}>{workItem.fields[CoreFields.WorkItemType]}: {workItem.id}</strong>, ".  Split to continue them in your next sprint."];
-                let items = children.filter(workitem => selectedIds.indexOf(workitem.id) !== -1).map(child => {
+                const description = ["Below are the incomplete items for ", <strong key={workItem.id}>{workItem.fields[CoreFields.WorkItemType]}: {workItem.id}</strong>, ".  Split to continue them in your next sprint."];
+                const items = children.filter(workitem => selectedIds.indexOf(workitem.id) !== -1).map(child => {
                     return {
                         key: child.id,
                         title: `${child.id}: ${child.fields[CoreFields.Title]}`
                     }
                 });
 
-                var onTextboxChange = (value) => {
+                const onTextboxChange = (value) => {
                     this.setState(Object["assign"]({}, this.state, { newTitle: value }));
                 };
 
-                var onCheckboxChange = (value) => {
+                const onCheckboxChange = (value) => {
                     this.setState(Object["assign"]({}, this.state, { openNewWorkItem: value }));
                 };
 
-                var onCopyTagsChange = (value) => {
+                const onCopyTagsChange = (value) => {
                     this.setState(Object["assign"]({}, this.state, { copyTags: value }));
                 };
 
-                var onRemove = (key: string | number) => {
+                const onRemove = (key: string | number) => {
                     this.setState(Object["assign"]({}, this.state, { selectedIds: selectedIds.filter(i => i !== key) }));
                 };
 
@@ -226,11 +226,11 @@ class DialogComponent extends React.Component<any, IDialogComponentState> {
 
 
     public async startSplit(id: number): Promise<boolean> {
-        var client = getClient();
+        const client = getClient();
         const context = VSS.getWebContext();
 
         const workItem = await client.getWorkItem(id, null, null, WorkItemExpand.All)
-        var childIds = getChildIds(workItem);
+        const childIds = getChildIds(workItem);
 
         // Display "No children to be split"
         if (childIds.length === 0) {
@@ -246,12 +246,12 @@ class DialogComponent extends React.Component<any, IDialogComponentState> {
             return false;
         }
         else {
-            var workItemTypeToExcludedStates = {};
-            var incompleteChildren = [];
+            const workItemTypeToExcludedStates = {};
+            const incompleteChildren = [];
 
             const children = await client.getWorkItems(childIds)
 
-            for (var i = 0, len = children.length; i < len; i++) {
+            for (let i = 0, len = children.length; i < len; i++) {
                 const childItem = children[i];
                 const childItemType = childItem.fields[CoreFields.WorkItemType];
 
@@ -293,12 +293,12 @@ class DialogComponent extends React.Component<any, IDialogComponentState> {
     }
 }
 
-let element = document.getElementById("root");
+const element = document.getElementById("root");
 let dialogComponent: DialogComponent;
 
 ReactDOM.render(<DialogComponent ref={(i) => dialogComponent = i} />, element);
 
-var dialog = {
+const dialog = {
     startSplit: (id: number) => dialogComponent.startSplit(id),
     getDetails: (): { ids: number[], title: string, shouldOpenNewWorkItem: boolean, shouldCopyTags: boolean } => {
         return {
