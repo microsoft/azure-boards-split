@@ -40,8 +40,8 @@ function createHtmlLink(link: string, text: number | string) {
 }
 
 function createWorkItemHtmlLink(id: number): string {
-    var context = VSS.getWebContext();
-    var link = `${context.collection.uri}${context.project.name}/_workitems/edit/${id}`;
+    const context = VSS.getWebContext();
+    const link = `${context.collection.uri}${context.project.name}/_workitems/edit/${id}`;
     return createHtmlLink(link, id);
 }
 
@@ -52,20 +52,20 @@ function removeLinks(workItem: WorkItem, linkedWorkItemIds: number[], targetId: 
         });
     }
 
-    var indices = [];
+    const indices = [];
     workItem.relations.forEach((relation, index) => {
         linkedWorkItemIds.forEach(id => {
-            var relationId = parseInt(relation.url.substr(relation.url.lastIndexOf("/") + 1), 10);
+            const relationId = parseInt(relation.url.substr(relation.url.lastIndexOf("/") + 1), 10);
             if (relationId === id) {
                 indices.unshift(index);
             }
         });
     });
 
-    var patchDocument = indices.map(index => createRemoveRelationPatchBlock(index));
+    const patchDocument = indices.map(index => createRemoveRelationPatchBlock(index));
 
-    var childLinks = linkedWorkItemIds.map(id => createWorkItemHtmlLink(id)).join(", ");
-    var comment = `The following items were ${createHtmlLink("http://aka.ms/split", "split")} to work item ${createWorkItemHtmlLink(targetId)}:<br>&nbsp;&nbsp;${childLinks}`;
+    const childLinks = linkedWorkItemIds.map(id => createWorkItemHtmlLink(id)).join(", ");
+    const comment = `The following items were ${createHtmlLink("http://aka.ms/split", "split")} to work item ${createWorkItemHtmlLink(targetId)}:<br>&nbsp;&nbsp;${childLinks}`;
     patchDocument.push(createFieldPatchBlock(CoreFields.History, comment));
 
     return getClientWit().updateWorkItem(patchDocument, workItem.id);
@@ -78,13 +78,13 @@ function addRelations(workItem: WorkItem, relations: WorkItemRelation[]): IPromi
         });
     }
 
-    var patchDocument = relations.map(relation => createAddRelationPatchBlock(relation));
+    const patchDocument = relations.map(relation => createAddRelationPatchBlock(relation));
     return getClientWit().updateWorkItem(patchDocument, workItem.id);
 }
 
 function updateLinkRelations(sourceWorkItem: WorkItem, targetWorkItem: WorkItem, childIdsToMove: number[]): IPromise<WorkItem> {
-    var parentRelation = sourceWorkItem.relations.filter(relation => relation.rel === "System.LinkTypes.Hierarchy-Reverse");
-    var attachmentRelations = sourceWorkItem.relations.filter(relation => relation.rel === "AttachedFile").map(relation => {
+    const parentRelation = sourceWorkItem.relations.filter(relation => relation.rel === "System.LinkTypes.Hierarchy-Reverse");
+    const attachmentRelations = sourceWorkItem.relations.filter(relation => relation.rel === "AttachedFile").map(relation => {
         return <WorkItemRelation>{
             rel: relation.rel,
             url: relation.url,
@@ -97,25 +97,25 @@ function updateLinkRelations(sourceWorkItem: WorkItem, targetWorkItem: WorkItem,
             }
         };
     });
-    var childRelations = sourceWorkItem.relations.filter(relation => {
+    const childRelations = sourceWorkItem.relations.filter(relation => {
         if (relation.rel === "System.LinkTypes.Hierarchy-Forward") {
-            var url = relation.url;
-            var id = parseInt(url.substr(url.lastIndexOf("/") + 1), 10);
+            const url = relation.url;
+            const id = parseInt(url.substr(url.lastIndexOf("/") + 1), 10);
             return childIdsToMove.indexOf(id) > -1;
         }
         return false;
     });
 
     return removeLinks(sourceWorkItem, childIdsToMove, targetWorkItem.id).then(() => {
-        var relationsToAdd = parentRelation.concat(childRelations).concat(attachmentRelations);
+        const relationsToAdd = parentRelation.concat(childRelations).concat(attachmentRelations);
         return addRelations(targetWorkItem, relationsToAdd);
     });
 }
 
 function updateIterationPath(childIdsToMove: number[], iterationPath: string): IPromise<WorkItem[]> {
-    var promises: IPromise<WorkItem>[] = [];
+    const promises: IPromise<WorkItem>[] = [];
     childIdsToMove.forEach(childId => {
-        var patchDocument = [createFieldPatchBlock(CoreFields.IterationPath, iterationPath)];
+        const patchDocument = [createFieldPatchBlock(CoreFields.IterationPath, iterationPath)];
         promises.push(getClientWit().updateWorkItem(patchDocument, childId));
     });
 
@@ -135,11 +135,11 @@ function isFieldInArray(fieldToFind: string, fieldsToCopy: string[]): boolean {
 
 async function createWorkItem(workItem: WorkItem, copyTags: boolean, title?: string, iterationPath?: string): Promise<WorkItem> {
     const context = VSS.getWebContext();
-    let patchDocument = [];
+    const patchDocument = [];
     const currentWorkItemType = workItem.fields[CoreFields.WorkItemType];
 
     /* Hello custom extension author - Add your custom field ref name here!*/
-    var fieldsToCopy = [CoreFields.Title, CoreFields.AssignedTo, CoreFields.IterationPath, CoreFields.AreaPath, CoreFields.Description,
+    const fieldsToCopy = [CoreFields.Title, CoreFields.AssignedTo, CoreFields.IterationPath, CoreFields.AreaPath, CoreFields.Description,
         AdditionalFields.AcceptanceCriteria, AdditionalFields.ReproSteps, AdditionalFields.SystemInfo];
 
     // Copy any fields that are required for this work item 
@@ -171,17 +171,17 @@ async function createWorkItem(workItem: WorkItem, copyTags: boolean, title?: str
             patchDocument.push(createFieldPatchBlock(field, workItem.fields[field]));
         }
     });
-    var comment = `This work item was ${createHtmlLink("http://aka.ms/split", "split")} from work item ${createWorkItemHtmlLink(workItem.id)}: ${workItem.fields[CoreFields.Title]}`;
+    const comment = `This work item was ${createHtmlLink("http://aka.ms/split", "split")} from work item ${createWorkItemHtmlLink(workItem.id)}: ${workItem.fields[CoreFields.Title]}`;
     patchDocument.push(createFieldPatchBlock(CoreFields.History, comment));
 
     return getClientWit().createWorkItem(patchDocument, context.project.name, workItem.fields[CoreFields.WorkItemType]);
 }
 
 function findNextIteration(sourceWorkItem: WorkItem): IPromise<string> {
-    var currentIterationPath = sourceWorkItem.fields[CoreFields.IterationPath];
+    const currentIterationPath = sourceWorkItem.fields[CoreFields.IterationPath];
 
-    var context = VSS.getWebContext();
-    var teamContext = {
+    const context = VSS.getWebContext();
+    const teamContext = {
         project: context.project.name,
         projectId: context.project.id,
         team: context.team.name,
@@ -189,10 +189,10 @@ function findNextIteration(sourceWorkItem: WorkItem): IPromise<string> {
     };
 
     return getClientWork().getTeamIterations(teamContext).then((iterations: TeamSettingsIteration[]) => {
-        var index = 0;
-        var found = false;
-        for (var len = iterations.length; index < len; index++) {
-            var iteration = iterations[index];
+        let index = 0;
+        let found = false;
+        for (let len = iterations.length; index < len; index++) {
+            const iteration = iterations[index];
             if (currentIterationPath === iteration.path) {
                 found = true;
                 break;
@@ -217,10 +217,10 @@ async function performSplit(id: number, childIdsToMove: number[], copyTags: bool
 }
 
 function showDialog(workItemId: number) {
-    var _dialog: IExternalDialog;
-    var _contribution: any;
+    let _dialog: IExternalDialog;
+    let _contribution: any;
     
-    var dialogOptions = <IHostDialogOptions>{
+    const dialogOptions = <IHostDialogOptions>{
         title: "Split work item",
         draggable: true,
         modal: true,
@@ -250,8 +250,8 @@ function showDialog(workItemId: number) {
     };
 
     VSS.getService(VSS.ServiceIds.Dialog).then((dialogSvc: IHostDialogService) => {
-        var extensionCtx = VSS.getExtensionContext();
-        var splitWorkDialogContributionId = extensionCtx.publisherId + "." + extensionCtx.extensionId + ".vsts-extension-split-work-dialog";
+        const extensionCtx = VSS.getExtensionContext();
+        const splitWorkDialogContributionId = extensionCtx.publisherId + "." + extensionCtx.extensionId + ".vsts-extension-split-work-dialog";
         dialogSvc.openDialog(splitWorkDialogContributionId, dialogOptions).then((dialog: IExternalDialog) => {
             _dialog = dialog;
             dialog.getContributionInstance(splitWorkDialogContributionId).then((contribution: any) => {
@@ -266,14 +266,14 @@ function showDialog(workItemId: number) {
     });
 }
 
-var actionProvider = {
+const actionProvider = {
     getMenuItems: (context) => {
         return [<IContributedMenuItem>{
             text: "Split",
             title: "Split",
             icon: "img/icon.png",
             action: (actionContext) => {
-                let workItemId = actionContext.id
+                const workItemId = actionContext.id
                     || actionContext.workItemId
                     || (actionContext.ids && actionContext.ids.length > 0 && actionContext.ids[0])
                     || (actionContext.workItemIds && actionContext.workItemIds.length > 0 && actionContext.workItemIds[0]);

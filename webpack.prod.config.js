@@ -45,13 +45,9 @@ module.exports = {
                 use: ["style-loader", "css-loader"]
             },
             {
-                test: /\.woff$/,
-                use: [
-                  {
-                    loader: "base64-inline-loader"
-                  }
-                ]
-              },
+                test: /\.(woff|woff2|eot|ttf)$/,
+                type: 'asset/inline'
+            },
             {
                 test: /\.(png|svg|jpg|gif|html)$/,
                 use: "file-loader"
