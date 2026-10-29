@@ -1,0 +1,16 @@
+{
+    "compilerOptions": {
+        "target": "es2019",
+        "module": "commonjs",
+        "moduleResolution": "node",
+        "strict": true,
+        "skipLibCheck": true,
+        "rootDir": ".",
+        "outDir": ".test-build",
+        "types": ["node"]
+    },
+    "include": [
+        "scripts/constants.ts",
+        "scripts/splitLogic.ts"
+    ]
+}
