@@ -44,6 +44,7 @@
     "clean": "npm run clean:vsix && npx rimraf dist",
     "build:dev": "npm run clean && webpack --progress",
     "build:release": "npm run clean && webpack --config webpack.prod.config.js --progress",
+    "test": "tsc --project tsconfig.test.json && node --test test/splitLogic.test.js",
     "package:dev:web": "npm run clean:vsix && node ./package/packageDev",
     "package:prod:web": "npm run clean:vsix && node ./package/packageProd",
     "lint": "eslint scripts/ --ext .ts,.tsx",

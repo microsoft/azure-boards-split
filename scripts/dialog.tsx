@@ -8,6 +8,7 @@ import { WorkItem, WorkItemExpand } from "TFS/WorkItemTracking/Contracts";
 import { getClient } from "TFS/WorkItemTracking/RestClient";
 
 import { CoreFields } from "./constants";
+import { loadIncompleteChildren } from "./splitLogic";
 
 import { TextField, TextFieldWidth } from "azure-devops-ui/TextField";
 import { Checkbox } from "azure-devops-ui/Checkbox";
@@ -25,22 +26,10 @@ import "azure-devops-ui/Core/override.css";
 import "./dialog.scss";
 
 
-const DefaultExcludedWorkItemStates = ["Closed", "Removed", "Cut", "Done", "Completed"];
-const ExcludedWorkItemMetaStates = ["Completed", "Removed"];
-
 enum LoadingState {
     Loading,
     Loaded
 }
-
-
-function getChildIds(workItem: WorkItem): number[] {
-    return !workItem.relations ? [] : workItem.relations.filter(relation => relation.rel === "System.LinkTypes.Hierarchy-Forward").map(relation => {
-        const url = relation.url;
-        return parseInt(url.substr(url.lastIndexOf("/") + 1), 10);
-    });
-}
-
 
 
 class TextFieldComponenet extends React.Component<any, any> {
@@ -230,10 +219,13 @@ class DialogComponent extends React.Component<any, IDialogComponentState> {
         const context = VSS.getWebContext();
 
         const workItem = await client.getWorkItem(id, null, null, WorkItemExpand.All)
-        const childIds = getChildIds(workItem);
+        const incompleteChildren = await loadIncompleteChildren(workItem, context.project.name, {
+            getWorkItems: async ids => client.getWorkItems(ids),
+            getWorkItemTypeStates: async (project, type) => client.getWorkItemTypeStates(project, type)
+        });
 
         // Display "No children to be split"
-        if (childIds.length === 0) {
+        if (incompleteChildren.length === 0) {
             this.setState({
                 loadState: LoadingState.Loaded,
                 workItem: null,
@@ -246,38 +238,6 @@ class DialogComponent extends React.Component<any, IDialogComponentState> {
             return false;
         }
         else {
-            const workItemTypeToExcludedStates = {};
-            const incompleteChildren = [];
-
-            const children = await client.getWorkItems(childIds)
-
-            for (let i = 0, len = children.length; i < len; i++) {
-                const childItem = children[i];
-                const childItemType = childItem.fields[CoreFields.WorkItemType];
-
-                // We need to determine this child's specific "Completed" and "Removed" states (may be custom depending on process)
-                // For example, "Closed" state is from the "Completed" category. Some users may have a custom process with additional 
-                // states in "Completed" or "Removed". After fetching, store each type's states in a dictionary 
-                if (!workItemTypeToExcludedStates[childItemType]) {
-                    const states = await client.getWorkItemTypeStates(context.project.name, childItem.fields[CoreFields.WorkItemType]);
-                    const stateNamesInExcludedCategory = [];
-                    states.forEach(s => {
-                        if (s.category === ExcludedWorkItemMetaStates[0] || s.category === ExcludedWorkItemMetaStates[1]) {
-                            stateNamesInExcludedCategory.push(s.name);
-                        }
-                    })
-
-                    workItemTypeToExcludedStates[childItemType] = stateNamesInExcludedCategory;
-                }
-
-                // Check if this child work item is in an incomplete state ("Proposed", "In Progress", or "Resolved")
-                const excludedStates = workItemTypeToExcludedStates[childItemType] || DefaultExcludedWorkItemStates;
-                const childState = children[i].fields[CoreFields.State];
-                if (excludedStates.indexOf(childState) === -1) {
-                    incompleteChildren.push(children[i]);
-                }
-            }
-
             this.setState({
                 workItem: workItem,
                 children: incompleteChildren,
@@ -288,7 +248,7 @@ class DialogComponent extends React.Component<any, IDialogComponentState> {
                 copyTags: true
             });
 
-            return this.state.selectedIds.length > 0;
+            return incompleteChildren.length > 0;
         }
     }
 }
