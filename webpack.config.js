@@ -17,7 +17,7 @@ module.exports = {
     },
 
     devServer: {
-        https: true,
+        server: "https",
         port: 9090,
         open: true
     },
